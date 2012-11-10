@@ -1,0 +1,239 @@
+#!/bin/bash
+#!/bin/bash
+#需要安装 w3m
+#城市代码可在 http://wap.weather.com.cn/wap/search.shtml 上查询，是个9位的数字
+#编写：xzap (xzap1982@gmail.com)
+#请到http://wap.weather.com.cn/wap/search.shtml输入要查询的城市名称
+#然后在地址栏找到九位数字填入下面的wid后面
+#如我本地的http://wap.weather.com.cn/wap/101210302/h24.shtml 
+
+#=============废话结束，开始========================
+#城市编码
+Wid=101250101
+#天气信息存放位置
+wfile="/dev/shm/weather"
+usage(){
+echo -e "\tUsage: `basename $0` 帮助文件"
+cat <<EOF
+
+   =============下面是说明===============
+
+     主要就是根据参数来在conky中输出需要的信息
+     如：tianqi -riqi 
+	不带参数输出完整信息
+
+	-riqi	     这个是输出日期的
+	-nongli	     显示农历
+	-chengshi    查询的城市
+	-tianqi      天气
+	-qiwen       温度
+	-fengxiang   风向	
+	-icon        显示的图标
+	-mingtian    显示明天的天气
+	-houtian     显示后天的天气
+	-dahoutian   显示大后天的天气
+	-dadahoutian 显示大大后天的天气
+      
+    
+   =============说明结束================
+              
+EOF
+}
+#获取天气数据到$wfile函数
+GET_WEATHER() {
+	[ -z "${Wid}" ] && \
+	echo "请到http://wap.weather.com.cn/wap/search.shtml输入要查询的城市名称，获得wid填入代码开头位置中。" && exit
+	w3m -dump http://wap.weather.com.cn/wap/weather/${Wid}.shtml \
+	|sed 's/\[.*\]//g'|sed 's/^ *//g' |sed '/^$/d' |sed -n '1,17p'>$wfile
+}
+#检测天气信息文件是否存在，不存在创建
+[ -e "$wfile" ] || GET_WEATHER
+#检测天气信息文件是否过期，以小时为单位检测
+ft=`date +%Y%m%d%H  -r $wfile`
+nt=`date +%Y%m%d%H`
+if [ $ft -ne $nt ] ;then GET_WEATHER;fi
+
+#获取天气图标函数
+GET_WEATHER_ICON() {
+local tmp weathercn index 
+WeatherCN=("晴" "多云" "阴" "雨" "雷阵雨" "雾" "雪" "雨夹雪")
+WeatherEN=("a" "c" "e" "h" "i" "d" "j" "k")
+tmp="`cat $wfile|sed -n '4p'|awk '{print $1}'`"
+
+j=0; k=0
+	for i in ${WeatherCN[@]}; do
+		[ "${tmp//$i}" != "$tmp" ] && weathercn[$j]="$i" && index[$j]="$k" && ((j++))
+		((k++))
+	done
+	[ "${#weathercn[@]}" -eq 0 ] && Weather[0]="unknown"
+	[ "${#weathercn[@]}" -eq 1 ] && Weather[0]="${WeatherEN[${index[0]}]}"&& w_icon="${Weather[0]}"
+	[ "${#weathercn[@]}" -eq 2 ] && \
+	if [ "`echo $tmp|grep "${weathercn[0]}转"`" ];then
+		Weather[0]="${WeatherEN[${index[0]}]}"
+		Weather[1]="${WeatherEN[${index[1]}]}"
+		w_icon="${Weather[0]}${Weather[1]}"
+	elif [ "`echo $tmp|grep "${weathercn[1]}转"`" ];then
+		Weather[0]="${WeatherEN[${index[1]}]}"
+		Weather[1]="${WeatherEN[${index[0]}]}"
+		w_icon="${Weather[0]}${Weather[1]}"
+	else 
+		Weather[0]="${WeatherEN[${index[1]}]}"
+		w_icon="${Weather[0]}"
+	fi
+	[ "${#weathercn[@]}" -eq 3 ] && \
+	{
+		Weather[0]="${WeatherEN[${index[0]}]}"
+		Weather[1]="${WeatherEN[${index[2]}]}"
+		w_icon="${Weather[0]}${Weather[1]}"
+		
+
+	}
+echo $w_icon
+}
+
+case $1 in 
+	-riqi)
+
+		cat $wfile |sed -n '2p'
+		shift
+	;;
+	-nongli) 
+		w3m -dump http://wap.weather.com.cn/wap/|sed -n '3p'|sed 's/.*\[\(.*\)\]/\1/g'		
+		shift
+	;;
+	-chengshi)
+		cat $wfile |sed -n '1p'	
+		shift
+	;;
+	-tianqi)
+		cat $wfile|sed -n '4p'|awk '{print $1}'
+		shift
+	;;
+	-qiwen)
+		cat $wfile|sed -n '4p'|awk '{print $2}'
+		shift
+	;;
+	-fengxiang)
+		cat $wfile|sed -n '5p'
+		shift
+	;;
+	
+	
+	-icon)
+		GET_WEATHER_ICON
+		
+		
+		shift
+	;;
+	-mingtian)
+		
+		cat $wfile|sed -n '7p'
+		
+		shift
+	;;
+	-houtian)
+		cat $wfile|sed -n '10p'
+		
+		
+		shift
+	;;
+	-dahoutian)
+		cat $wfile|sed -n '13p'
+		
+		
+		shift
+	;;
+	-dadahoutian)
+		cat $wfile|sed -n '16p'
+		
+		
+		shift
+	;;
+	-d1)		
+		cat $wfile |sed -n '3p'
+		shift
+	;;
+	-d2)		
+		cat $wfile |sed -n '6p'
+		shift
+	;;
+	-d3)		
+		cat $wfile |sed -n '9p'
+		shift
+	;;
+	-d4)		
+		cat $wfile |sed -n '12p'
+		shift
+	;;
+	-d5)		
+		cat $wfile |sed -n '15p'
+		shift
+	;;
+	-x1)		
+		xx=`cat $wfile |sed -n '3p'|sed 's/月/ /g' |sed  's/日//g'`
+		x1=`echo $xx|awk '{print $1}'`
+		[ ${#x1} = 1 ] && x1=0$x1 
+		x2=`echo $xx|awk '{print $2}'`
+		[ ${#x2} = 1 ] && x2=0$x2 
+		year=`date +%Y`
+		
+		echo `date -d $year$x1$x2 +%A` 
+		shift
+	;;
+	-x2)		
+		xx=`cat $wfile |sed -n '6p'|sed 's/月/ /g' |sed  's/日//g'`
+		x1=`echo $xx|awk '{print $1}'`
+		[ ${#x1} = 1 ] && x1=0$x1 
+		x2=`echo $xx|awk '{print $2}'`
+		[ ${#x2} = 1 ] && x2=0$x2 
+		year=`date +%Y`
+		
+		echo `date -d $year$x1$x2 +%A` 
+		shift
+	;;
+	-x3)		
+		xx=`cat $wfile |sed -n '9p'|sed 's/月/ /g' |sed  's/日//g'`
+		x1=`echo $xx|awk '{print $1}'`
+		[ ${#x1} = 1 ] && x1=0$x1 
+		x2=`echo $xx|awk '{print $2}'`
+		[ ${#x2} = 1 ] && x2=0$x2 
+		year=`date +%Y`
+		
+		echo `date -d $year$x1$x2 +%A` 
+		shift
+	;;
+	-x4)		
+		xx=`cat $wfile |sed -n '12p'|sed 's/月/ /g' |sed  's/日//g'`
+		x1=`echo $xx|awk '{print $1}'`
+		[ ${#x1} = 1 ] && x1=0$x1 
+		x2=`echo $xx|awk '{print $2}'`
+		[ ${#x2} = 1 ] && x2=0$x2 
+		year=`date +%Y`
+		
+		echo `date -d $year$x1$x2 +%A` 
+		shift
+	;;
+	-x5)		
+		xx=`cat $wfile |sed -n '15p'|sed 's/月/ /g' |sed  's/日//g'`
+		x1=`echo $xx|awk '{print $1}'`
+		[ ${#x1} = 1 ] && x1=0$x1 
+		x2=`echo $xx|awk '{print $2}'`
+		[ ${#x2} = 1 ] && x2=0$x2 
+		year=`date +%Y`
+		
+		echo `date -d $year$x1$x2 +%A` 
+		shift
+	;;
+
+       	-h|--help)
+		usage
+	;;        
+	*)
+        echo "使用`basename $0` -h 或者`basename $0` --help 查看帮助"
+	echo 
+	cat $wfile
+	
+	;;
+esac 
+
+
