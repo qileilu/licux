@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon=blueman
+Name=bluetooth-stop
+Exec=/licux/.lcbin/bluetooth-stop.sh
+Categories=Network
+

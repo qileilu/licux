@@ -1,0 +1,19 @@
+[Desktop Entry]
+Comment[zh_CN]=使用 WPS 演示编辑、播放演示文稿
+Comment=Use Kingsoft Presentation to edit and play presentations.
+Exec=/licux/.lcopt/wps-office/wps
+GenericName[zh_CN]=
+GenericName=
+MimeType=application/wps-office.dps;application/wps-office.dpt;application/wps-office.ppt;application/wps-office.pot;application/vnd.ms-powerpoint;application/vnd.mspowerpoint;application/mspowerpoint;application/powerpoint;application/x-mspowerpoint;
+Name[zh_CN]=WPS 演示
+Name=Kingsoft Presentation
+StartupNotify=false
+Terminal=false
+Type=Application
+Categories=Office;Presentation;Qt;
+X-DBUS-ServiceName=
+X-DBUS-StartupType=
+X-KDE-SubstituteUID=false
+X-KDE-Username=
+Icon=/licux/.lcconf/icons/hicolor/48x48/apps/wps-office-wppmain.png
+InitialPreference=3

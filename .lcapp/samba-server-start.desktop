@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon=preferences-system-network
+Name=samba-server-start
+Exec=/licux/.lcbin/samba-server-start.sh
+Categories=Network
+

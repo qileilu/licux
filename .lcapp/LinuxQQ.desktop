@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon=/licux/.lcopt/linuxqq_v1.0.2_i386/QQ.png
+Name=LinuxQQ
+Exec=/licux/.lcopt/linuxqq_v1.0.2_i386/QQLnk
+Categories=Network
+

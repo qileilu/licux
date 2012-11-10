@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon=preferences-system-network
+Name=samba-server-stop
+Exec=/licux/.lcbin/samba-server-stop.sh
+Categories=Network
+
